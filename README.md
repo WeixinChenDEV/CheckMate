@@ -1,6 +1,31 @@
-# Checkmate（OutboundApp）— 项目说明
+# CheckMate — Collaborative Travel Packing App / 旅行行李清單協作應用
 
-CheckMate 是一个可共享的旅行打包清单应用，使用 React、Flask 与数据库保存清单、管理协作，并提供天气和 AI 物品建议。它不负责景点行程规划、订票或训练语言模型。
+## English
+
+CheckMate helps travellers organise what to pack and coordinate shared items with friends. Users can create dated trip checklists, mark essential items, assign items to collaborators, and share lists with view-only or editing access. Weather information and an AI packing assistant provide item suggestions that users can review before adding to their lists.
+
+The application uses **React** for the frontend, **Flask REST APIs** for the backend, **MySQL** for persistent storage, and **JWT** for authentication. Templates, a trip calendar and reusable packing history support the preparation workflow. An optional SQLite configuration makes local demos easier to run.
+
+## 繁體中文
+
+CheckMate 協助旅客整理旅行所需物品，並與朋友分工準備共同攜帶的物品。使用者可以建立附有出發及返程日期的行李清單、標記必帶物品、分配物品負責人，並以唯讀或可編輯權限共享清單。應用程式結合天氣資訊及 AI 行李助手，提供物品建議，讓使用者確認後加入清單。
+
+前端採用 **React**，後端使用 **Flask REST API**，以 **MySQL** 儲存資料，並透過 **JWT** 驗證登入身分。清單範本、旅行日曆及可重用的打包紀錄，方便使用者管理旅行準備流程。另提供可選的 SQLite 設定，簡化本機示範的啟動步驟。
+
+## Features / 主要功能
+
+| Feature | 功能 |
+| --- | --- |
+| Trip checklists with departure and optional return dates | 附出發及選填返程日期的行李清單 |
+| View-only and editable sharing with friends | 與朋友共享清單，支援唯讀及編輯權限 |
+| Essential-item labels and item assignment | 必帶物品標記及物品分工 |
+| Weather information and packing suggestions | 天氣資訊及攜帶物品建議 |
+| AI suggestions with user-selected checklist import | AI 物品建議，由使用者選擇後匯入清單 |
+| Templates, calendar and reusable packing history | 清單範本、日曆及可重用的打包紀錄 |
+
+**Scope / 功能範圍:** AI suggestions focus on packing items. Shared lists use API-based saving and refreshing; live simultaneous editing is a future improvement. / AI 建議以攜帶物品為主；共享清單透過 API 儲存及重新載入，即時多人編輯屬後續改進方向。
+
+The development notes below cover local setup, verification and implementation details in Simplified Chinese. / 以下開發筆記以簡體中文說明本機啟動、驗證及實作細節。
 
 ## 快速运行（Windows PowerShell）
 
