@@ -399,7 +399,7 @@ export default function App() {
       theme: newScenario.theme,
       items: newScenario.items,
       trip_start_at: newScenario.trip_start_at ?? null,
-      trip_end_at: null,
+      trip_end_at: newScenario.trip_end_at ?? null,
     });
     await refreshData();
   };

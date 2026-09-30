@@ -1,6 +1,56 @@
 # Checkmate（OutboundApp）— 项目说明
 
-本文面向课程答辩或代码审阅：说明本软件 **做什么**、**实现了哪些功能**、**代码与数据如何组织**、**如何本地运行**、**如何部署到云端**。全文无表格，便于通读或复制片段。
+CheckMate 是一个可共享的旅行打包清单应用，使用 React、Flask 与数据库保存清单、管理协作，并提供天气和 AI 物品建议。它不负责景点行程规划、订票或训练语言模型。
+
+## 快速运行（Windows PowerShell）
+
+需要 Node.js 与 Python 3.12。以下命令在仓库根目录执行。
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
+Copy-Item backend/.env.example backend/.env
+```
+
+修改 `backend/.env` 的 `JWT_SECRET_KEY`。示例文件启用 `DATABASE_URL=sqlite:///checkmate.db`，会创建本地演示数据库，无需安装 MySQL。若使用原项目的 MySQL 方案，注释该行并填写 MySQL 配置，先创建数据库，再启动服务。已有 `.env` 时请编辑它，不要覆盖自己的配置。
+
+启动后端：
+
+```powershell
+.venv/Scripts/python.exe backend/app.py
+```
+
+在另一个终端启动前端：
+
+```powershell
+npm ci
+npm start
+```
+
+前端通常位于 `http://localhost:3000`，开发代理转发到 `http://127.0.0.1:5000`。首次演示先注册账号。MySQL 为原项目存储方案；SQLite 是便于运行与测试的替代配置。
+
+天气需要网络，主要调用 Open-Meteo；配置其他天气服务密钥后可使用已有的回退逻辑。AI 提供商可通过 `backend/.env` 配置；没有密钥或服务失败时使用本地规则式建议，不会伪装成模型输出。用户选择物品后才导入清单。
+
+## 自动化验证
+
+```powershell
+npm test -- --watchAll=false --runInBand
+.venv/Scripts/python.exe -m unittest discover -s backend/tests -v
+$env:CI='false'
+npm run build
+```
+
+测试覆盖 AI 物品解析、行程日期输入和保存、认证、共享权限、天气参数与服务失败。后端测试使用独立内存数据库和模拟服务，不连接现有数据库或付费模型。前端目前存在继承的 lint 警告；构建会显示这些警告。GitHub Actions 会执行前端测试、构建和后端测试。
+
+## 本次完善
+
+- AI 清单解析兼容 Markdown 标题、编号、复选框和中英文标题；去重、保留必带优先级并排除提示/追问。
+- 新建行程支持选填返程时间，保存时保留日期；最早可选时间使用本地时间。
+- 不完整、非数字或越界天气坐标返回 400，不再悄悄查询默认城市。
+- 天气服务不可用时温度显示未知，不再使用固定示例温度生成建议。
+- 添加测试、CI 和本地演示配置。
+
+查看 [项目与面试说明](docs/INTERVIEW_GUIDE.zh-CN.md)，了解项目定位、技术用途、实际限制与演示步骤。下文保留功能和架构说明，部署部分为可选方案，不表示已验证线上服务。
 
 ---
 
@@ -171,15 +221,15 @@ Checkmate（仓库 README 商品名也可称 OutboundApp）是一个 **出行 / 
 
 ---
 
-## 九、部署架构（全端云端化，课程可说明「我如何上线」）
+## 九、可选部署架构
 
-本项目的生产环境采用 **前后端分离 + CI/CD**，典型组合为 **Vercel（前端）+ Render（后端）+ Aiven（MySQL）**，通过 **GitHub** 推送触发构建与部署。
+可采用 **前后端分离**，例如 **Vercel（前端）+ Render（后端）+ Aiven（MySQL）**。关联 GitHub 的托管平台可以配置推送后部署，但当前仓库与本次本地检查不证明这些线上服务已部署成功。
 
 **前端层（Vercel）**  
 职责是托管 React **构建后的静态资源** 并使用 **全球 CDN** 加速。仓库关联 GitHub **主分支** 后，每次推送自动执行 **`npm run build`**。在 Vercel 中配置环境变量 **`REACT_APP_API_URL`**，值为 **Render 上 Flask 服务的公开根 URL**（构建时打入前端，使浏览器请求发往生产 API，而不再依赖开发用的 proxy）。
 
 **后端层（Render）**  
-职责是以 **Web Service** 运行 **Flask**，处理业务逻辑、调用 AI 厂商接口、校验 JWT。使用 **Python 3**，用 **`requirements.txt`** 安装依赖；生产进程可用 **`gunicorn app:app`**（工作目录为 `backend`，与 `app.py` 中暴露的 `app` 实例对应）。**Flask-CORS** 需 **严格配置**：允许 **Vercel 前端域名** 来源，并允许 **`Authorization`** 请求头，以便 JWT 通行。**JWT 密钥、数据库连接串、各 AI API Key** 等全部放在 Render 的 **Environment Variables**，不在仓库中硬编码。
+职责是以 **Web Service** 运行 **Flask**，处理业务逻辑、调用 AI 厂商接口、校验 JWT。Linux 生产环境可额外安装 Gunicorn，使用 `gunicorn app:app`（工作目录为 `backend`）；当前 requirements.txt 未包含该生产服务器。现有 CORS 允许所有来源，正式部署前需要配置实际前端域名。**JWT 密钥、数据库连接串、各 AI API Key** 等应放在托管平台环境变量中。当前应用会自动创建表并尝试补充字段，连接已有数据库前应确认其适用范围。
 
 **数据层（Aiven）**  
 职责是提供 **高可用 MySQL**。应用连接串中配置 **SSL / CA 证书（如 ca.pem）** 以保证传输加密。因 Render 出口 IP 可能变化，Aiven 侧 **IP 白名单** 可按厂商说明配置（例如 **`0.0.0.0/0`** 放行，同时依赖强密码、TLS、最小权限账号控制风险）。

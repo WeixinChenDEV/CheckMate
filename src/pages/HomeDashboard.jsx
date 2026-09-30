@@ -155,6 +155,7 @@ const HomeDashboard = ({
     return myTrips.filter((s) => s.access !== 'shared' && isSameLocalDate(s.trip_start_at));
   }, [myTrips, tipTargetDate]);
   const weatherPackingItems = useMemo(() => {
+    if (weather?.source === 'system-fallback' && !selectedTipDayWeather) return [];
     const out = [];
     const isZh = (t?.('navHome') || '') === '首页';
     const tip = {
@@ -186,7 +187,8 @@ const HomeDashboard = ({
     const uv = Number(selectedTipDayWeather?.uvIndexMax ?? weather?.uvIndex);
     const humidity = Number(isTodaySelected ? weather?.humidity : undefined);
     const wind = Number(isTodaySelected ? weather?.windKmh : undefined);
-    const temp = Number(selectedTipDayWeather?.max ?? weather?.temp);
+    const temperature = selectedTipDayWeather?.max ?? weather?.temp;
+    const temp = temperature == null ? NaN : Number(temperature);
     const code = Number(selectedTipDayWeather?.weatherCode ?? weather?.weatherCode);
 
     if (!Number.isNaN(uv) && uv >= 6) {

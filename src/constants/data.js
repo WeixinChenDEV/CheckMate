@@ -252,7 +252,7 @@ export const IconMap = {
 
 /** Used when the weather API is offline or still loading. */
 export const WEATHER_FALLBACK = {
-  temp: 22,
+  temp: null,
   condition: 'Unavailable',
   location: '—',
   comfort: '—',
