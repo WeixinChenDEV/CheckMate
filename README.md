@@ -1,209 +1,136 @@
-# Checkmate（OutboundApp）— 项目说明
+# CheckMate
+### Collaborative Travel Packing App · 旅行行李清單協作應用
 
-本文面向课程答辩或代码审阅：说明本软件 **做什么**、**实现了哪些功能**、**代码与数据如何组织**、**如何本地运行**、**如何部署到云端**。全文无表格，便于通读或复制片段。
+**English**
+CheckMate helps travellers prepare packing lists and coordinate shared items with friends. Users can create trip checklists, mark essential items, assign responsibilities, and share lists with view-only or editing access. Weather information and an AI packing assistant provide suggestions that users review before adding to their lists.
 
----
+**繁體中文**
+CheckMate 協助旅客整理行李清單，並與朋友分工準備共同攜帶的物品。使用者可以建立旅行清單、標記必帶物品、分配物品負責人，並以唯讀或可編輯權限共享清單。應用程式結合天氣資訊與 AI 行李助手，提供物品建議，讓使用者確認後加入清單。
 
-## 一、项目是做什么的
+## Features · 主要功能
 
-Checkmate（仓库 README 商品名也可称 OutboundApp）是一个 **出行 / 旅行场景下的打包清单 Web 应用**。用户可以创建 **带出发 / 结束日期的行程清单**，对物品进行 **勾选与编辑**；支持 **模板快速建单** 与 **日历** 管理行程。系统用户（注册账号）可以 **加好友**、把清单 **共享** 给他人（**只读** 或 **可共同编辑**），并把清单项 **指派** 给好友。首页集成 **当前天气** 与 **天气详情**，便于按天气调整携带物品。界面中部提供 **AI 助手**：可 **对话**、**根据对话生成新行程**，或 **向当前行程追加物品**。用户 **完成打包** 后，符合条件的行程会进入 **历史记录**，并支持 **从历史复用** 旧清单。界面支持 **多主题**、**深色模式**、**中文与英文** 切换。
+| English | 繁體中文 |
+| --- | --- |
+| Register, sign in and manage a personal profile | 註冊、登入及管理個人資料 |
+| Create and edit packing lists, with essential-item labels | 建立及編輯行李清單，標記必帶物品 |
+| Organise trip dates in a calendar | 透過日曆管理旅行日期 |
+| Add friends, share lists and assign items | 新增朋友、共享清單及分配物品 |
+| Choose view-only or editable sharing permissions | 設定唯讀或可編輯的共享權限 |
+| View weather information and suggested packing items | 查看天氣資訊及攜帶物品建議 |
+| Select AI suggestions to create a list or update an existing one | 選擇 AI 建議，建立新清單或更新現有清單 |
+| Reuse templates and packing history | 重用清單範本及打包紀錄 |
+| Switch themes, dark mode and English/Chinese interface text | 切換主題、深色模式及英文／中文介面文字 |
 
-技术选型上：前端为 **React** 单页应用，后端为 **Flask REST API**，数据持久化在 **MySQL**；用户会话使用 **JWT**，前后端分离，可部署在本地或云端。
+## Technology · 技術
 
----
+| Layer / 層面 | Tools / 工具 | Purpose / 用途 |
+| --- | --- | --- |
+| Frontend / 前端 | React, Tailwind CSS, Framer Motion | Pages, state and interactions / 頁面、狀態及互動 |
+| Backend / 後端 | Python, Flask, REST API | Requests and business logic / 請求處理及業務邏輯 |
+| Storage / 資料儲存 | MySQL, SQLAlchemy | Users, lists and sharing relationships / 使用者、清單及共享關係 |
+| Authentication / 身分驗證 | JWT, password hashing | Sign-in and protected API access / 登入及受保護的 API 存取 |
+| Weather / 天氣 | Open-Meteo; optional fallback providers | Weather data and packing hints / 天氣資料及攜帶物品提示 |
+| Assistant / 助手 | Configurable language-model APIs | Packing suggestions / 行李物品建議 |
 
-## 二、我实现的主要功能（全量清单，便于核对）
+React sends HTTP requests to Flask. The backend checks authentication and permissions, reads or updates the database, and returns JSON to the frontend.
 
-**账号与身份**
+React 透過 HTTP 請求連接 Flask。後端檢查登入身分及操作權限，讀取或更新資料庫，再將 JSON 結果傳回前端。
 
-- 用户 **注册**、**登录**；服务端返回 **JWT**，前端本地保存并在请求头携带 `Authorization: Bearer <token>`。
-- **会话恢复**：有 token 时自动请求当前用户信息并拉取数据。
-- **个人资料**：显示名、头像风格（与 Dicebear 等展示逻辑配合）。
-- **修改密码**、**退出登录**、**注销账号**（删除用户及相关数据由后端处理）。
+## Getting Started · 本機啟動
 
-**清单与行程**
+Use Node.js, Python 3.12 and a MySQL database. Run the following commands from the repository root. The examples use Windows PowerShell.
 
-- **创建**行程：名称、图标、主题、物品列表、可选行程起止时间。
-- **编辑**行程：增删改物品、**紧要**标记、勾选状态；拥有者可改名称、主题、协作者、归档状态、日期等。
-- **删除**行程：仅 **拥有者** 可删，且 **预设类型**（非 `custom`）的清单不可删除。
-- **快捷模板页**：从内置模板生成草稿，再进入创建流程保存为自有行程。
-- **日历**：查看行程日期、修改起止时间、从指定日期 **新建** 行程草稿。
-- **列表展示**：默认只展示 **未归档** 行程；归档行程由「完成打包」等逻辑触发。
+需要 Node.js、Python 3.12 及 MySQL 資料庫。以下範例使用 Windows PowerShell，請在倉庫根目錄執行。
 
-**协作**
+### 1. Install backend dependencies · 安裝後端依賴
 
-- **按用户名查找** 注册用户并发 **好友请求**；对方 **接受 / 拒绝**；展示 **入站 / 出站** 请求状态。
-- **删除好友**；好友与注册用户通过 `linked_user_id` 等形式关联。
-- **共享清单**：拥有者指定对方用户名，并设置 **仅查看**（`can_edit` 为假）或 **可编辑**（为真）。
-- **取消共享**。
-- **清单详情** 中可将物品 **指派** 给 `"me"` 或 `collaborators` 中登记的好友 id；服务端校验指派对象合法，否则返回 400。
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
+Copy-Item backend/.env.example backend/.env
+```
 
-**天气**
+If `backend/.env` already exists, edit it instead of overwriting it. Set a long random `JWT_SECRET_KEY` and your database connection details. Create the MySQL database before starting the backend; the application creates its tables during startup.
 
-- 拉取 **当前天气** 与 **更细预报**（如按小时 / 按天）；支持经纬度、城市名或环境默认位置；数据来自 **Open-Meteo**（无需 API Key），失败时有降级展示。
-- 前端可将 **天气相关建议** 合并进指定行程，并对「行程出发日是否与所选日一致」等做了限制，避免误加。
+若已有 `backend/.env`，請直接編輯，避免覆寫現有設定。設定足夠長的隨機 `JWT_SECRET_KEY` 及資料庫連線資訊。啟動後端前，請先建立 MySQL 資料庫；應用程式會在啟動時建立所需資料表。
 
-**AI 助手**
+For a lightweight local demo, you can instead set `DATABASE_URL=sqlite:///checkmate.db` in `backend/.env`. This uses a local SQLite file. Remove or comment out this setting when using MySQL.
 
-- 浮层 **对话**；可 **导入为新行程** 或 **向当前行程追加物品**（只读共享清单侧会限制写入）。
-- 后端通过环境变量选择 **AI 提供商** 与 **API Key**；提供 **status** 接口仅报告是否配置、**不返回密钥**。
+如需簡化本機示範，可在 `backend/.env` 設定 `DATABASE_URL=sqlite:///checkmate.db`，改用本機 SQLite 檔案。使用 MySQL 時，請移除或註解此設定。
 
-**历史与完成打包**
+### 2. Start the backend · 啟動後端
 
-- **完成打包** 流程及成功页。
-- **只读共享**（`access === shared`）不写历史、不归档。
-- **拥有者** 在「当前时间已超过行程结束日或开始日（按前端 cutoff 逻辑）」时，会 **写入历史** 并将行程 **归档**；否则仍可能进入成功页但 **不记历史**。
-- **历史列表**：单条删除、清空全部、**复用** 为新建行程（物品重新生成 id）。
+```powershell
+.venv/Scripts/python.exe backend/app.py
+```
 
-**设置与个性化**
+The API runs at `http://127.0.0.1:5000`.
 
-- **主题**：后端允许的主题键包括 `cinnamon`、`hazeBlue`、`sageGreen` 等。
-- **深色模式**、**通知**、**声音**、**自动定位**、**界面语言**（`en` / `zh`）。
-- 偏好与主题会 **同步到服务端**（`/api/preferences`）。
+API 位於 `http://127.0.0.1:5000`。
 
----
+### 3. Start the frontend · 啟動前端
 
-## 三、仓库怎么跑（本地）
+Open another terminal:
 
-**前端** 在仓库 **根目录**：`package.json` 中为 React 18、Tailwind、`react-scripts`（Create React App）。开发时配置了 **proxy** 指向 `http://127.0.0.1:5000`，本地一般 **不必** 设置 `REACT_APP_API_URL`，`npm install` 后 `npm start` 即可，API 会转发到本机后端。
+開啟另一個終端：
 
-**后端** 在 **`backend/`**：主逻辑集中在 **`app.py`**，依赖见 **`requirements.txt`**（Flask、Flask-CORS、Flask-SQLAlchemy、PyJWT、PyMySQL、python-dotenv 等）。**MySQL** 连接字符串与密钥放在 **`backend` 的环境变量**（如 `.env`）中，勿提交真实密码。
+```powershell
+npm install
+npm start
+```
 
-**认证约定**：除注册、登录、健康检查等少数接口外，多数接口需 **JWT**；请求头为 **`Authorization: Bearer <token>`**。
+Open `http://localhost:3000` and register an account. The development proxy forwards API requests to the backend. For a production frontend build, configure `REACT_APP_API_URL` with your backend URL.
 
----
+開啟 `http://localhost:3000` 並註冊帳號。開發代理會將 API 請求轉送至後端。如需建立正式環境的前端版本，請將 `REACT_APP_API_URL` 設為後端網址。
 
-## 四、前端结构（方便审阅代码时定位）
+On macOS/Linux, use `python3 -m venv .venv` and `.venv/bin/python` in place of the Windows Python paths; use `cp` to copy the environment template.
 
-入口为 **`src/index.js`** 与 **`src/App.jsx`**。项目 **未使用 React Router**，通过 **`currentView`**（如 `login`、`home`、`me`、`quick`、`calendar`、`settings`、`detail`、`create`、`success`）与 **`activeTab`** 切换主界面；**底部导航** 仅在 `home`、`quick`、`calendar`、`me` 时出现。
+在 macOS／Linux 上，請使用 `python3 -m venv .venv`，並將 Windows 的 Python 路徑改為 `.venv/bin/python`；環境設定範本可用 `cp` 複製。
 
-**HTTP 封装** 在 **`src/api.js`**（`API_BASE` 来自 `process.env.REACT_APP_API_URL`，生产构建时在平台注入）。
+## External Services · 外部服務
 
-**页面** 在 **`src/pages/`**：`UserLogin`、`HomeDashboard`、`QuickScenariosPage`、`CalendarPage`、`MyProfileAndLibrary`、`SystemSettings`、`ChecklistDetail`、`CreateNewTrip`、`PackingSuccess`、`AIChatAssistant`。
+**Weather / 天氣**
+Open-Meteo requires internet access. Additional weather providers can be configured for fallback. The requested location comes from coordinates, a city or the configured default location.
 
-**文案** 在 **`src/uiCopy.js`**、**`src/settingsCopy.js`**；**主题与常量** 在 **`src/constants/data.js`**。
+Open-Meteo 需要網絡連線，亦可設定其他天氣服務作為備援。查詢位置來自經緯度、城市名稱或預設位置設定。
 
----
+**AI packing assistant / AI 行李助手**
+Configure an AI provider and its API key in `backend/.env`. Supported integrations include Moonshot, DeepSeek, SiliconFlow, DashScope and Gemini. Without a configured key, or when the model service fails, the backend can return rule-based suggestions. Users choose which items to import.
 
-## 五、后端数据模型（概念层）
+請在 `backend/.env` 設定 AI 服務及其 API 金鑰。現有整合包括 Moonshot、DeepSeek、SiliconFlow、DashScope 及 Gemini。未設定金鑰或模型服務失敗時，後端可提供規則式建議；使用者自行選擇要匯入的物品。
 
-**User**：用户名唯一、密码哈希、显示名、头像风格等。对外 JSON 里当前用户 **`id` 常为字符串 `"me"`**，与清单项里 **`assignedTo: "me"`** 一致；真实数据库整数 id 多在 **`db_id`**。
+Keep real database passwords, JWT secrets and API keys out of Git.
 
-**Scenario**：复合主键（**拥有者 `user_id` + 字符串 `scenario_id`**）。字段包括 `name`、`icon`、`theme`（JSON）、`type`（默认 `custom`）、`items`（JSON 数组）、`collaborators`（JSON）、`archived`、`trip_start_at`、`trip_end_at` 等。
+請勿將真實資料庫密碼、JWT 密鑰或 API 金鑰提交至 Git。
 
-**Friend**：某用户的好友列表中的一行；**`linked_user_id` 非空** 表示已关联另一名 **注册用户**。
+## Project Structure · 專案結構
 
-**FriendRequest**：好友请求（谁向谁、状态如 `pending` 等）。
+| Path / 路徑 | Description / 說明 |
+| --- | --- |
+| `src/App.jsx` | App state and page navigation / 應用程式狀態及頁面切換 |
+| `src/pages/` | Checklist, calendar, profile and assistant pages / 清單、日曆、個人資料及助手頁面 |
+| `src/components/` | Shared interface components / 共用介面元件 |
+| `src/api.js` | Frontend API client and token handling / 前端 API 呼叫及 token 處理 |
+| `backend/app.py` | Flask endpoints, database models and external integrations / Flask 接口、資料模型及外部服務整合 |
+| `backend/seed_data.py` | Initial checklist data / 初始清單資料 |
+| `backend/.env.example` | Environment configuration template / 環境設定範本 |
 
-**ScenarioShare**：拥有者将某 `scenario` 分享给另一用户；**`can_edit` 为 false 表示只读，为 true 表示可共同编辑 items**。
+## Demo Flow · 示範流程
 
-**HistoryRecord**：一条打包历史，可含 `scenario_id`、`name`、`date`、`status` 等。
+1. Register an account and create a packing list. / 註冊帳號並建立行李清單。
+2. Add essential and optional items, then save the list. / 新增必帶及一般物品，再儲存清單。
+3. Add a second user as a friend and demonstrate sharing permissions. / 新增另一位使用者為朋友，示範共享權限。
+4. Ask the assistant for packing suggestions and import selected items. / 向助手查詢物品建議，並匯入選定物品。
+5. Explore the calendar, weather information and reusable templates. / 查看日曆、天氣資訊及可重用的範本。
 
----
+## Current Scope · 目前範圍
 
-## 六、HTTP API（路径列表）
+The assistant focuses on packing items. Sharing uses API-based saving and refreshing. Real-time simultaneous editing, conflict resolution and automated destination-specific trip planning are possible future improvements. Production deployment and live provider availability depend on your own configuration.
 
-`GET /api/health` — 健康检查。
+助手以行李物品建議為主。共享清單透過 API 儲存及重新載入。即時多人編輯、衝突處理及按目的地自動規劃旅行，可作為後續改進方向。正式環境部署及外部服務可用性，取決於實際設定。
 
-`POST /api/auth/register` — 注册，返回 token 与公开用户信息；新用户会 seed 初始数据。
+## Development Updates · 開發更新
 
-`POST /api/auth/login` — 登录，返回 token。
+[Packing workflow improvements and regression tests / 打包流程改進及回歸測試](https://github.com/WeixinChenDEV/CheckMate/pull/1) are tracked separately in a pull request. Check its status to see which updates have been merged into the default branch.
 
-`GET`、`PUT`、`DELETE /api/me` — 当前用户资料；`DELETE` 为销号。
-
-`PUT /api/me/password` — 修改密码。
-
-`GET /api/users/lookup?username=` — 按用户名查询是否存在。
-
-`GET`、`POST /api/friends/requests` — 列出好友请求（可带 `direction`）、创建请求。
-
-`POST /api/friends/requests/<id>/accept` — 接受请求。
-
-`POST /api/friends/requests/<id>/decline` — 拒绝请求。
-
-`GET /api/friends` — 好友列表。
-
-`DELETE /api/friends/<friend_id>` — 删除好友。
-
-`POST /api/scenarios/<id>/share` — body 含 `username`、`can_edit`。
-
-`DELETE /api/scenarios/<id>/share?username=` — 取消分享。
-
-`GET /api/scenarios` — **自己的未归档行程** 与 **他人分享给我的行程**。
-
-`POST /api/scenarios` — 创建；**必须同时提供 name 与非空 items**；校验行程开始不能在过去、结束不能早于开始。
-
-`GET`、`PUT`、`DELETE /api/scenarios/<scenario_id>` — 读取、更新、删除；**仅拥有者可删**；**`type` 非 `custom` 的预设清单不可删**。
-
-`GET`、`POST /api/history` — 历史列表、新增记录。
-
-`DELETE /api/history/<record_id>` — 删除单条历史。
-
-`DELETE /api/history` — 清空历史。
-
-`GET`、`PUT /api/preferences` — 用户偏好（主题、深色、语言等）。
-
-`POST /api/assistant/reply` — AI 对话，body 含 `message`，可选 `conversation`。
-
-`GET /api/assistant/status` — 各 AI 后端是否配置（不返回密钥）。
-
-`GET /api/weather` — 当前天气；query 可用 `lat`+`lon` 或 `city`；无参则用环境默认。
-
-`GET /api/weather/detail` — 更细预报，参数规则同上。
-
----
-
-## 七、清单访问模式与更新规则（核心逻辑）
-
-列表中每条行程带有 **`access`**：**`owner`**（本人）、**`shared`**（他人分享、只读）、**`shared_edit`**（他人分享、可改内容）。被分享的行程还会带 **`owner_user_id`**、**`owner_username`** 等；本人拥有的行程可带 **`share_recipients`**（已分享给谁、每人 **`can_edit`**）。
-
-**`PUT` 更新行程时**：**拥有者** 可更新 name、icon、theme、items、collaborators、archived、行程日期等。**非拥有者** 但 **`can_edit` 为真** 时，**仅能更新 `items`**；若尝试改名称、主题、日期等，返回 **403**。**只读共享** 不能改内容。
-
-更新 **`items`** 时，每项的 **指派对象** 必须在允许集合内（含 **`"me"`** 与 **`collaborators`** 中登记的好友 id），否则 **400**。更新 **`collaborators`** 时，后端会 **同步** 与协作者相关的 **可编辑分享** 关系。
-
----
-
-## 八、外部依赖（第三方服务）
-
-**天气**：**Open-Meteo**，一般无需 API Key；异常时后端返回降级数据。
-
-**AI**：依赖多个厂商的 **API Key** 与环境变量（如 `AI_PROVIDER` 及各家 Key）；**`/api/assistant/status`** 仅用于探测是否配置，**不泄露密钥**。
-
----
-
-## 九、部署架构（全端云端化，课程可说明「我如何上线」）
-
-本项目的生产环境采用 **前后端分离 + CI/CD**，典型组合为 **Vercel（前端）+ Render（后端）+ Aiven（MySQL）**，通过 **GitHub** 推送触发构建与部署。
-
-**前端层（Vercel）**  
-职责是托管 React **构建后的静态资源** 并使用 **全球 CDN** 加速。仓库关联 GitHub **主分支** 后，每次推送自动执行 **`npm run build`**。在 Vercel 中配置环境变量 **`REACT_APP_API_URL`**，值为 **Render 上 Flask 服务的公开根 URL**（构建时打入前端，使浏览器请求发往生产 API，而不再依赖开发用的 proxy）。
-
-**后端层（Render）**  
-职责是以 **Web Service** 运行 **Flask**，处理业务逻辑、调用 AI 厂商接口、校验 JWT。使用 **Python 3**，用 **`requirements.txt`** 安装依赖；生产进程可用 **`gunicorn app:app`**（工作目录为 `backend`，与 `app.py` 中暴露的 `app` 实例对应）。**Flask-CORS** 需 **严格配置**：允许 **Vercel 前端域名** 来源，并允许 **`Authorization`** 请求头，以便 JWT 通行。**JWT 密钥、数据库连接串、各 AI API Key** 等全部放在 Render 的 **Environment Variables**，不在仓库中硬编码。
-
-**数据层（Aiven）**  
-职责是提供 **高可用 MySQL**。应用连接串中配置 **SSL / CA 证书（如 ca.pem）** 以保证传输加密。因 Render 出口 IP 可能变化，Aiven 侧 **IP 白名单** 可按厂商说明配置（例如 **`0.0.0.0/0`** 放行，同时依赖强密码、TLS、最小权限账号控制风险）。
-
-**整体请求链路**  
-用户浏览器访问 **Vercel 上的站点** → 前端根据 **`REACT_APP_API_URL`** 向 **Render** 发起 REST 请求并携带 **JWT** → Render 校验 Token、执行业务逻辑、读写 **Aiven MySQL** → 返回 JSON → 前端更新 React 状态并渲染界面。
-
-**与本地开发的差异**  
-本地依赖 **`package.json` 的 proxy** 指向 `127.0.0.1:5000`；生产依赖 **`REACT_APP_API_URL`** 指向公网 API。两者互不冲突，分别对应开发机与线上环境。
-
----
-
-## 十、审阅或二次开发时的总规则（一句话）
-
-行程分为 **owner、shared、shared_edit**；**非拥有者** 更新时 **几乎只能改 items**；**创建行程必须带非空 items**；**删除行程** 仅 **拥有者** 且 **`type` 为 custom**；对外当前用户 **`id` 常为 `"me"`**；列表接口 **默认不返回已归档** 行程。
-
----
-
-## 十一、仓库目录提示
-
-**`src/`** — 前端源码。  
-**`backend/`** — Flask 应用（主逻辑 **`app.py`**）。  
-根目录 **`package.json`** — 前端脚本与开发代理。
-
----
-
-以上即本课程项目 **功能范围、技术实现要点与部署方式** 的完整说明，可直接作为报告附录或答辩材料引用。
+打包流程改進及回歸測試由上述 Pull Request 另行追蹤。請查看其狀態，確認哪些更新已合併至預設分支。
