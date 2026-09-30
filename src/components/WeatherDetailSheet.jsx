@@ -137,7 +137,7 @@ export default function WeatherDetailSheet({ open, onClose, theme, weatherFetchP
                   </div>
                   <div className="flex flex-col items-center shrink-0">
                     <Glyph iconKey={c.iconKey} className={theme.primaryText} />
-                    <span className={`text-4xl font-bold ${theme.textMain} mt-1`}>{c.temp}°</span>
+                    <span className={`text-4xl font-bold ${theme.textMain} mt-1`}>{c.temp ?? '—'}°</span>
                     <span className={`text-xs ${theme.textSub}`}>{c.condition}</span>
                   </div>
                 </div>

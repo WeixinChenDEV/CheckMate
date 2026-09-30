@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, AlertCircle, Circle } from 'lucide-react';
 import { uiT } from '../uiCopy';
+import { toLocalDateTimeInput } from '../tripDates';
 
 const CreateNewTrip = ({
   onBack,
@@ -14,21 +15,24 @@ const CreateNewTrip = ({
   const t = uiT(language);
   const [name, setName] = useState('');
   const [tripStartAt, setTripStartAt] = useState('');
+  const [tripEndAt, setTripEndAt] = useState('');
   const [items, setItems] = useState([]);
   const [criticalInput, setCriticalInput] = useState('');
   const [optionalInput, setOptionalInput] = useState('');
   const inputLocale = language === 'zh' ? 'zh-CN' : 'en-US';
-  const minDateTime = new Date().toISOString().slice(0, 16);
+  const minDateTime = toLocalDateTimeInput();
 
   useEffect(() => {
     if (!initialTrip) {
       setName('');
       setTripStartAt('');
+      setTripEndAt('');
       setItems([]);
       return;
     }
     setName(String(initialTrip.name || '').trim());
     setTripStartAt(initialTrip.trip_start_at ? String(initialTrip.trip_start_at).slice(0, 16) : '');
+    setTripEndAt(initialTrip.trip_end_at ? String(initialTrip.trip_end_at).slice(0, 16) : '');
     const seededItems = (Array.isArray(initialTrip.items) ? initialTrip.items : []).map((it, idx) => ({
       id: it?.id || `draft_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 7)}`,
       text: String(it?.text || '').trim(),
@@ -61,6 +65,10 @@ const CreateNewTrip = ({
       window.alert(t('tripStartPastError'));
       return;
     }
+    if (tripEndAt && (!tripStartAt || new Date(tripEndAt) < new Date(tripStartAt))) {
+      window.alert(t('tripEndBeforeStartError'));
+      return;
+    }
     const payload = {
       id: Date.now().toString(),
       name,
@@ -68,7 +76,7 @@ const CreateNewTrip = ({
       theme: initialTrip?.theme || { bg: theme.primaryLight, text: theme.primaryText },
       items,
       trip_start_at: tripStartAt || null,
-      trip_end_at: null,
+      trip_end_at: tripEndAt || null,
     };
     await onSave(payload);
   };
@@ -124,6 +132,19 @@ const CreateNewTrip = ({
               className={`input-soft w-full py-3 px-4 ${theme.cardBg} ${theme.textMain}`}
               value={tripStartAt}
               onChange={(e) => setTripStartAt(e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+          <div className="mt-3">
+            <p className={`text-[11px] ${theme.textSub} mb-1.5`}>{t('tripDateEnd')}</p>
+            <input
+              type="datetime-local"
+              lang={inputLocale}
+              aria-label={t('tripDateEnd')}
+              min={tripStartAt || minDateTime}
+              className={`input-soft w-full py-3 px-4 ${theme.cardBg} ${theme.textMain}`}
+              value={tripEndAt}
+              onChange={(e) => setTripEndAt(e.target.value)}
               disabled={isSaving}
             />
           </div>

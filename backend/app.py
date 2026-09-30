@@ -1920,11 +1920,11 @@ def _weather_unavailable_payload(
         "coordinatesLabel": _format_latlon_human(lat, lon),
         "latitude": round(lat, 4),
         "longitude": round(lon, 4),
-        "temp": 22,
+        "temp": None,
         "tempUnit": "C",
         "apparentTemp": None,
         "condition": "Unavailable",
-        "weatherCode": 3,
+        "weatherCode": None,
         "iconKey": "cloud",
         "humidity": None,
         "windKmh": None,
@@ -1945,8 +1945,13 @@ def _weather_unavailable_payload(
 
 def _weather_resolve_from_request(req: Any) -> tuple[float, float, str, str | None]:
     """Parse ?lat=&lon= | ?city= | defaults. Returns (lat, lon, location, location_detail)."""
-    lat_q = req.args.get("lat", type=float)
-    lon_q = req.args.get("lon", type=float)
+    lat_q = lon_q = None
+    if "lat" in req.args or "lon" in req.args:
+        try:
+            lat_q = float(req.args["lat"])
+            lon_q = float(req.args["lon"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError("Invalid coordinates. Provide both numeric lat and lon.") from None
     city = (req.args.get("city") or "").strip()
     label = (req.args.get("label") or "").strip()
 
